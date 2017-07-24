@@ -194,24 +194,25 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 
 		case "ca":
 			serviceHost = "ca" + strconv.Itoa(i)
-			service = &Service{
-				Hostname:	serviceHost + "." + domainName,
-			}
 			orgId := strconv.Itoa(i + 1)
+			service = &Service{
+				Hostname:	"ca.org" + orgId +  "." + domainName,
+			}
 			service.Networks = make(map[string]*ServNet, 1)
 			service.Networks[networkName] = &ServNet{
-				Aliases: []string{serviceName + "_peerOrg" + orgId},
+				Aliases: []string{"ca.org" + orgId +  "." + domainName},
 			}
 			service.Image = "hyperledger/fabric-ca" + TAG
 			service.Environment = make([]string, 5)
 			service.Environment[0] = "FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server"
-      service.Environment[1] = "FABRIC_CA_SERVER_CA_NAME=ca-org" + orgId
+      service.Environment[1] = "FABRIC_CA_SERVER_CA_NAME=ca.org" + orgId +  "." + domainName
       service.Environment[2] = "FABRIC_CA_SERVER_TLS_ENABLED=true"
       service.Environment[3] = "FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem"
       service.Environment[4] = "FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY"
 			service.Command = "sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY -b admin:adminpw -d'"
 			service.Volumes = make([]string, 1)
 			service.Volumes[0] = "./crypto-config/peerOrganizations/org" + orgId + "." + domainName + "/ca/:/etc/hyperledger/fabric-ca-server-config"
+			//service.Volumes[1] = "./fabric-ca-server/:/etc/hyperledger/fabric-ca-server"
             service.Ports = make([]string,1)
             service.Ports[0] = strconv.Itoa((7054 + (1000*i))) + ":" + "7054"
 			err := GenDeploy(service)
@@ -271,7 +272,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Volumes[2] = "./crypto-config/peerOrganizations/org" + orgNum + "." + domainName + "/peers/" + hostName + "/tls:/etc/hyperledger/fabric/tls"
             service.Ports = make([]string,2)
             service.Ports[0] = strconv.Itoa((7051 + (1000*(i/num[0])) + (i%num[0])*100)) + ":" + "7051"
-            service.Ports[1] = strconv.Itoa((7053 + (1000*(i/num[0])) + (i%num[0])*100)) + ":" + "7051"
+            service.Ports[1] = strconv.Itoa((7053 + (1000*(i/num[0])) + (i%num[0])*100)) + ":" + "7053"
 			err := GenDeploy(service)
 			check(err)
 
