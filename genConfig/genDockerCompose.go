@@ -210,10 +210,10 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
       service.Environment[2] = "FABRIC_CA_SERVER_TLS_ENABLED=true"
       service.Environment[3] = "FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem"
       service.Environment[4] = "FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY"
-			service.Command = "sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY -b admin:adminpw -d'"
-			service.Volumes = make([]string, 2)
+			service.Command = "sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY -b admin:adminpw --db.type mysql --db.tls.certfiles /etc/hyperledger/fabric-ca-server-config/ApsaraDB-CA-Chain.pem  --db.datasource blockchain:YW346abB2017_cQaz@tcp\\(rm-2ze81ji2iw67g5j74.mysql.rds.aliyuncs.com:3306\\)/fabric_ca_one?parseTime=true'"
+			service.Volumes = make([]string, 1)
 			service.Volumes[0] = "./crypto-config/peerOrganizations/org" + orgId + "." + domainName + "/ca/:/etc/hyperledger/fabric-ca-server-config"
-			service.Volumes[1] = "./fabric-ca-home/ca" + orgId + "/:/etc/hyperledger/fabric-ca-server"
+			//service.Volumes[1] = "./fabric-ca-server/:/etc/hyperledger/fabric-ca-server"
             service.Ports = make([]string,1)
             service.Ports[0] = strconv.Itoa((7054 + (1000*i))) + ":" + "7054"
 			err := GenDeploy(service)
