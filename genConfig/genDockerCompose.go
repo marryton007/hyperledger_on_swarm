@@ -213,7 +213,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Command = "sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY -b admin:adminpw -d'"
 			service.Volumes = make([]string, 2)
 			service.Volumes[0] = "./crypto-config/peerOrganizations/org" + orgId + "." + domainName + "/ca/:/etc/hyperledger/fabric-ca-server-config"
-			service.Volumes[1] = "./fabric-ca-home/:/etc/hyperledger/fabric-ca-server"
+			service.Volumes[1] = "./fabric-ca-home/ca" + orgId + ":/etc/hyperledger/fabric-ca-server"
             service.Ports = make([]string,1)
             service.Ports[0] = strconv.Itoa((7054 + (1000*i))) + ":" + "7054"
 			err := GenDeploy(service)
