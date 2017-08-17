@@ -231,7 +231,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[2] = "FABRIC_CA_SERVER_TLS_ENABLED=true"
 			service.Environment[3] = "FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem"
 			service.Environment[4] = "FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY"
-			service.Command = "sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY -b admin:adminpw --db.type mysql --db.tls.certfiles /etc/hyperledger/fabric-mysql/ApsaraDB-CA-Chain.pem  --db.datasource blockchain:YW346abB2017_cQaz@tcp\\(rm-2ze81ji2iw67g5j74.mysql.rds.aliyuncs.com:3306\\)/fabric_ca_one?parseTime=true'"
+			service.Command = "sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY -b admin:adminpw --db.type mysql  --db.datasource root:ODtph5JxjkGxr2lP@tcp\\(rm-2ze71bi9vkag1b881o.mysql.rds.aliyuncs.com:3306\\)/fabric_ca_one?parseTime=true'"
 			service.Volumes = make([]string, 2)
 			service.Volumes[0] = "./crypto-config/peerOrganizations/org" + orgId + "." + domainName + "/ca/:/etc/hyperledger/fabric-ca-server-config"
 			service.Volumes[1] = "./fabric-mysql/:/etc/hyperledger/fabric-mysql"
@@ -252,8 +252,14 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Networks[networkName] = &ServNet{
 				Aliases: []string{serviceHost},
 			}
+			service.Environment = make([]string, 3)
+			service.Environment[0] = "COUCHDB_USER=admin"
+			service.Environment[1] = "COUCHDB_PASSWORD=password"
+			service.Environment[3] = "COUCHDB_DATA_DIR=/opt/dbdata"
 			service.Volumes = make([]string, 1)
-			service.Volumes[0] = "/data/couchdb/" + serviceHost + ":/opt/couchdb"
+			service.Volumes[0] = "/data/couchdb/" + serviceHost + ":/opt/dbdata"
+			service.Ports = make([]string, 1)
+			service.Ports[0] = strconv.Itoa((5984 + (1000 * i))) + ":" + "5984"
 			deployName := "node" + strconv.Itoa(i%4)
 			err := GenDeployByHostName(service, deployName)
 			check(err)
@@ -271,7 +277,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Networks[networkName] = &ServNet{
 				Aliases: []string{hostName},
 			}
-			service.Environment = make([]string, 17)
+			service.Environment = make([]string, 19)
 			service.Environment[0] = "CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock"
 			service.Environment[1] = "CORE_LOGGING_LEVEL=DEBUG"
 			service.Environment[2] = "CORE_PEER_TLS_ENABLED=true"
@@ -288,7 +294,9 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[13] = "CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=" + networkName
 			service.Environment[14] = "CORE_LEDGER_STATE_STATEDATABASE=CouchDB"
 			service.Environment[15] = "CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb" + strconv.Itoa(i) + ":5984"
-			service.Environment[16] = "CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org" + orgNum + "." + domainName + ":7051"
+			service.Environment[16] = "CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin"
+			service.Environment[17] = "CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=password"
+			service.Environment[18] = "CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org" + orgNum + "." + domainName + ":7051"
 			//service.Environment[3]  = "CORE_PEER_ENDORSER_ENABLED=true"
 			//service.Environment[6]  = "CORE_PEER_GOSSIP_SKIPHANDSHAKE=true"
 			service.WorkingDir = "/opt/gopath/src/github.com/hyperledger/fabric/peer"
