@@ -111,6 +111,7 @@ func GenDeployByHostName(service *Service, hostName string) error {
 
 func GenService(dockerCompose *DockerCompose, domainName string, serviceName string, networkName string, num ...int) error {
 	var total int
+	hostnum := 3
 	if len(num) > 1 {
 		total = num[0] * num[1]
 	} else {
@@ -213,7 +214,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Volumes[3] = "/data/orderer/" + serviceHost + ":/var/hyperledger/production"
 			service.Ports = make([]string, 1)
 			service.Ports[0] = strconv.Itoa((7050 + (1000 * i))) + ":" + "7050"
-			deployName := "node" + strconv.Itoa(i%4)
+			deployName := "node" + strconv.Itoa(i%hostnum)
 			err := GenDeployByHostName(service, deployName)
 			check(err)
 
@@ -241,7 +242,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Volumes[1] = "./fabric-mysql/:/etc/hyperledger/fabric-mysql"
 			service.Ports = make([]string, 1)
 			service.Ports[0] = strconv.Itoa((7054 + (1000 * i))) + ":" + "7054"
-			deployName := "node" + strconv.Itoa(i%4)
+			deployName := "node" + strconv.Itoa(i%hostnum)
 			//err := GenDeploy(service)
 			err := GenDeployByHostName(service, deployName)
 			check(err)
@@ -263,7 +264,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Volumes[0] = "/data/couchdb/" + serviceHost + ":/opt/couchdb/data"
 			service.Ports = make([]string, 1)
 			service.Ports[0] = strconv.Itoa((5984 + (1000 * i))) + ":" + "5984"
-			deployName := "node" + strconv.Itoa(i%4)
+			deployName := "node" + strconv.Itoa(i%hostnum)
 			err := GenDeployByHostName(service, deployName)
 			check(err)
 
@@ -312,7 +313,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Ports = make([]string, 2)
 			service.Ports[0] = strconv.Itoa((7051 + (1000 * (i / num[0])) + (i%num[0])*100)) + ":" + "7051"
 			service.Ports[1] = strconv.Itoa((7053 + (1000 * (i / num[0])) + (i%num[0])*100)) + ":" + "7053"
-			deployName := "node" + strconv.Itoa(i%4)
+			deployName := "node" + strconv.Itoa(i%hostnum)
 			err := GenDeployByHostName(service, deployName)
 			check(err)
 
