@@ -247,17 +247,16 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service = &Service{
 				Hostname: serviceHost + "." + domainName,
 			}
-			service.Image = "hyperledger/fabric-couchdb" + TAG
+			service.Image = "klaemo/couchdb"
 			service.Networks = make(map[string]*ServNet, 1)
 			service.Networks[networkName] = &ServNet{
 				Aliases: []string{serviceHost},
 			}
-			service.Environment = make([]string, 3)
+			service.Environment = make([]string, 2)
 			service.Environment[0] = "COUCHDB_USER=admin"
 			service.Environment[1] = "COUCHDB_PASSWORD=password"
-			service.Environment[3] = "COUCHDB_DATA_DIR=/opt/dbdata"
 			service.Volumes = make([]string, 1)
-			service.Volumes[0] = "/data/couchdb/" + serviceHost + ":/opt/dbdata"
+			service.Volumes[0] = "/data/couchdb/" + serviceHost + ":/opt/couchdb/data"
 			service.Ports = make([]string, 1)
 			service.Ports[0] = strconv.Itoa((5984 + (1000 * i))) + ":" + "5984"
 			deployName := "node" + strconv.Itoa(i%4)
@@ -335,7 +334,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[10] = "CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1." + domainName + "/peers/peer0.org1." + domainName + "/tls/ca.crt"
 			service.Environment[11] = "CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1." + domainName + "/users/Admin@org1." + domainName + "/msp"
 			service.WorkingDir = "/opt/gopath/src/github.com/hyperledger/fabric/peer"
-			service.Command = "sleep 3600"
+			service.Command = "sleep 10003600"
 			service.Volumes = make([]string, 5)
 			service.Volumes[0] = "/var/run/:/host/var/run/"
 			service.Volumes[1] = "./../chaincode/:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/go"
