@@ -143,6 +143,8 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[0] = "CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=" + networkName
 			service.Environment[1] = "ZOO_MY_ID=" + strconv.Itoa(i+1)
 			service.Environment[2] = "ZOO_SERVERS=" + zookeeperList
+			service.Volumes = make([]string, 1)
+			service.Volumes[0] = "/data/zookeeper/" + serviceHost + ":/tmp/su-exec"
 			err := GenDeploy(service)
 			check(err)
 
@@ -170,6 +172,8 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[5] = "KAFKA_MIN_INSYNC_REPLICAS=2"
 			service.Environment[6] = "KAFKA_ZOOKEEPER_CONNECT=" + zookeeperString
 			service.Environment[7] = "KAFKA_BROKER_ID=" + strconv.Itoa(i)
+			service.Volumes = make([]string, 1)
+			service.Volumes[0] = "/data/zookeeper/" + serviceHost + ":/tmp/kafka-logs"
 			err := GenDeploy(service)
 			check(err)
 
@@ -206,7 +210,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Volumes[0] = "./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block"
 			service.Volumes[1] = "./crypto-config/ordererOrganizations/" + domainName + "/orderers/" + serviceHost + "." + domainName + "/msp:/var/hyperledger/orderer/msp"
 			service.Volumes[2] = "./crypto-config/ordererOrganizations/" + domainName + "/orderers/" + serviceHost + "." + domainName + "/tls/:/var/hyperledger/orderer/tls"
-			service.Volumes[3] = "/data/orderer/" + serviceHost + ":/var/hyperledger"
+			service.Volumes[3] = "/data/orderer/" + serviceHost + ":/var/hyperledger/production"
 			service.Ports = make([]string, 1)
 			service.Ports[0] = strconv.Itoa((7050 + (1000 * i))) + ":" + "7050"
 			deployName := "node" + strconv.Itoa(i%4)
