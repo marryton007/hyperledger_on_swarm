@@ -175,7 +175,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[6] = "KAFKA_ZOOKEEPER_CONNECT=" + zookeeperString
 			service.Environment[7] = "KAFKA_BROKER_ID=" + strconv.Itoa(i)
 			service.Volumes = make([]string, 1)
-			service.Volumes[0] = "/data/zookeeper/" + serviceHost + ":/tmp/kafka-logs"
+			service.Volumes[0] = "/data/kafka/" + serviceHost + ":/tmp/kafka-logs"
 			err := GenDeploy(service)
 			check(err)
 
