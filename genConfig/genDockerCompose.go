@@ -57,8 +57,8 @@ type RestartPolicy struct {
 	Window      time.Duration `yaml:"window,omitempty"`
 }
 
-//var TAG = `:x86_64-1.0.0`
-var TAG = `:latest`
+var TAG = `:x86_64-1.1.0-preview`
+//var TAG = `:latest`
 
 func GenDockerCompose(serviceName string, domainName string, networkName string, num ...int) (*DockerCompose, error) {
 	var dockerCompose = &DockerCompose{}
@@ -111,8 +111,8 @@ func GenDeployByHostName(service *Service, hostName string) error {
 
 func GenService(dockerCompose *DockerCompose, domainName string, serviceName string, networkName string, num ...int) error {
 	var total int
-	hostnum := 3
-	deployPreStr := "test"
+	hostnum := 2
+	deployPreStr := "swarm"
 	if len(num) > 1 {
 		total = num[0] * num[1]
 	} else {
@@ -146,7 +146,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[1] = "ZOO_MY_ID=" + strconv.Itoa(i+1)
 			service.Environment[2] = "ZOO_SERVERS=" + zookeeperList
 			service.Volumes = make([]string, 1)
-			service.Volumes[0] = "/data/zookeeper/" + serviceHost + ":/tmp/su-exec"
+			service.Volumes[0] = "/nfsshare/data/zookeeper/" + serviceHost + ":/tmp/su-exec"
 			err := GenDeploy(service)
 			check(err)
 
@@ -175,7 +175,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[6] = "KAFKA_ZOOKEEPER_CONNECT=" + zookeeperString
 			service.Environment[7] = "KAFKA_BROKER_ID=" + strconv.Itoa(i)
 			service.Volumes = make([]string, 1)
-			service.Volumes[0] = "/data/kafka/" + serviceHost + ":/tmp/kafka-logs"
+			service.Volumes[0] = "/nfsshare/data/kafka/" + serviceHost + ":/tmp/kafka-logs"
 			err := GenDeploy(service)
 			check(err)
 
@@ -212,7 +212,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Volumes[0] = "./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block"
 			service.Volumes[1] = "./crypto-config/ordererOrganizations/" + domainName + "/orderers/" + serviceHost + "." + domainName + "/msp:/var/hyperledger/orderer/msp"
 			service.Volumes[2] = "./crypto-config/ordererOrganizations/" + domainName + "/orderers/" + serviceHost + "." + domainName + "/tls/:/var/hyperledger/orderer/tls"
-			service.Volumes[3] = "/data/orderer/" + serviceHost + ":/var/hyperledger/production"
+			service.Volumes[3] = "/nfsshare/data/orderer/" + serviceHost + ":/var/hyperledger/production"
 			service.Ports = make([]string, 1)
 			service.Ports[0] = strconv.Itoa((7050 + (1000 * i))) + ":" + "7050"
 			deployName := deployPreStr + strconv.Itoa(i%hostnum)
@@ -237,10 +237,10 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[2] = "FABRIC_CA_SERVER_TLS_ENABLED=true"
 			service.Environment[3] = "FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem"
 			service.Environment[4] = "FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY"
-			service.Command = "sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY -b admin:adminpw --db.type mysql  --db.datasource root:ODtph5JxjkGxr2lP@tcp\\(rm-2ze71bi9vkag1b881o.mysql.rds.aliyuncs.com:3306\\)/fabric_ca_one?parseTime=true'"
+			service.Command = "sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY -b admin:adminpw -d'"
 			service.Volumes = make([]string, 2)
 			service.Volumes[0] = "./crypto-config/peerOrganizations/org" + orgId + "." + domainName + "/ca/:/etc/hyperledger/fabric-ca-server-config"
-			service.Volumes[1] = "./fabric-mysql/:/etc/hyperledger/fabric-mysql"
+			service.Volumes[1] = "/nfsshare/data/ca/ca"+ orgId+"/:/etc/hyperledger/fabric-ca-server"
 			service.Ports = make([]string, 1)
 			service.Ports[0] = strconv.Itoa((7054 + (1000 * i))) + ":" + "7054"
 			deployName := deployPreStr + strconv.Itoa(i%hostnum)
@@ -262,7 +262,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[0] = "COUCHDB_USER=admin"
 			service.Environment[1] = "COUCHDB_PASSWORD=password"
 			service.Volumes = make([]string, 1)
-			service.Volumes[0] = "/data/couchdb/" + serviceHost + ":/opt/couchdb/data"
+			service.Volumes[0] = "/nfsshare/data/couchdb/" + serviceHost + ":/opt/couchdb/data"
 			service.Ports = make([]string, 1)
 			service.Ports[0] = strconv.Itoa((5984 + (1000 * i))) + ":" + "5984"
 			deployName := deployPreStr + strconv.Itoa(i%hostnum)
@@ -310,7 +310,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Volumes[0] = "/var/run/:/host/var/run/"
 			service.Volumes[1] = "./crypto-config/peerOrganizations/org" + orgNum + "." + domainName + "/peers/" + hostName + "/msp:/etc/hyperledger/fabric/msp"
 			service.Volumes[2] = "./crypto-config/peerOrganizations/org" + orgNum + "." + domainName + "/peers/" + hostName + "/tls:/etc/hyperledger/fabric/tls"
-			service.Volumes[3] = "/data/blockdat/org" + orgNum + "/peer" + peerNum + ":/var/hyperledger/production"
+			service.Volumes[3] = "/nfsshare/data/blockdata/org" + orgNum + "/peer" + peerNum + ":/var/hyperledger/production"
 			service.Ports = make([]string, 2)
 			service.Ports[0] = strconv.Itoa((7051 + (1000 * (i / num[0])) + (i%num[0])*100)) + ":" + "7051"
 			service.Ports[1] = strconv.Itoa((7053 + (1000 * (i / num[0])) + (i%num[0])*100)) + ":" + "7053"
