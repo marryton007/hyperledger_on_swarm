@@ -58,6 +58,7 @@ type RestartPolicy struct {
 }
 
 var TAG = `:x86_64-1.1.0-preview`
+
 //var TAG = `:latest`
 
 func GenDockerCompose(serviceName string, domainName string, networkName string, num ...int) (*DockerCompose, error) {
@@ -165,7 +166,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 				zookeeperArray = append(zookeeperArray, "zookeeper"+strconv.Itoa(j)+":2181")
 			}
 			zookeeperString := arrayToString(zookeeperArray, ",")
-			service.Environment = make([]string, 8)
+			service.Environment = make([]string, 9)
 			service.Environment[0] = "CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=" + networkName
 			service.Environment[1] = "KAFKA_MESSAGE_MAX_BYTES=103809024"       // 99 MB
 			service.Environment[2] = "KAFKA_REPLICA_FETCH_MAX_BYTES=103809024" // 99 MB
@@ -174,6 +175,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Environment[5] = "KAFKA_MIN_INSYNC_REPLICAS=2"
 			service.Environment[6] = "KAFKA_ZOOKEEPER_CONNECT=" + zookeeperString
 			service.Environment[7] = "KAFKA_BROKER_ID=" + strconv.Itoa(i)
+			service.Environment[8] = "KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS=30000"
 			service.Volumes = make([]string, 1)
 			service.Volumes[0] = "/nfsshare/data/kafka/" + serviceHost + ":/tmp/kafka-logs"
 			err := GenDeploy(service)
@@ -240,7 +242,7 @@ func GenService(dockerCompose *DockerCompose, domainName string, serviceName str
 			service.Command = "sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org" + orgId + "." + domainName + "-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA" + orgId + "_PRIVATE_KEY -b admin:adminpw -d'"
 			service.Volumes = make([]string, 2)
 			service.Volumes[0] = "./crypto-config/peerOrganizations/org" + orgId + "." + domainName + "/ca/:/etc/hyperledger/fabric-ca-server-config"
-			service.Volumes[1] = "/nfsshare/data/ca/ca"+ orgId+"/:/etc/hyperledger/fabric-ca-server"
+			service.Volumes[1] = "/nfsshare/data/ca/ca" + orgId + "/:/etc/hyperledger/fabric-ca-server"
 			service.Ports = make([]string, 1)
 			service.Ports[0] = strconv.Itoa((7054 + (1000 * i))) + ":" + "7054"
 			deployName := deployPreStr + strconv.Itoa(i%hostnum)
