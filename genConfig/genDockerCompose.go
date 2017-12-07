@@ -57,7 +57,7 @@ type RestartPolicy struct {
 	Window      time.Duration `yaml:"window,omitempty"`
 }
 
-var TAG = `:x86_64-1.1.0-preview`
+var TAG = `:x86_64-1.0.0`
 
 //var TAG = `:latest`
 
@@ -97,9 +97,9 @@ func GenDeployByHostName(service *Service, hostName string) error {
 	constraint[0] = "node.hostname == " + hostName
 	deploy := &Deploy{
 		Replicas: 1,
-		Placement: &Placement{
-			Constraint: constraint,
-		},
+		//Placement: &Placement{
+		//	Constraint: constraint,
+		//},
 		RestartPolicy: &RestartPolicy{
 			Condition:   "on-failure",
 			Delay:       5 * time.Second,
